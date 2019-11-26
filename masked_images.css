@@ -1,0 +1,62 @@
+#puzz {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: stretch;
+}
+
+#puzz div#top {
+    height: 96px;
+    background-color: #ffeedd;
+    margin: 0 0 40px 0;
+    padding: 16px;
+}
+
+#puzz div#identify {
+    float: right;
+}
+
+#puzz div#chat p {
+    font-size: 16px;
+    margin: 4px 0 0 0;
+}
+
+#puzz .entryentry {
+    min-width: 600px;
+}
+
+#puzz #clue {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#puzz #clueanswer {
+    text-align: center;
+    font-weight: bold;
+    font-size: 144%;
+    padding: 16px;
+}
+
+#puzz #message {
+    text-align: center;
+    font-size: 120%;
+    font-weight: bold;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+#puzz .minidiv {
+    margin: 12px 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#puzz .minidiv img {
+    width: 200px;
+}

@@ -1,0 +1,14 @@
+shortname: masked_images
+title: Masked Images
+answer: 🦵
+
+author:
+  - Mark Gottlieb
+
+oncall: dougz@isotropic.org
+puzzletron_id: 271
+
+obfuscate_assets: true
+
+for_ops_url: https://docs.google.com/document/d/1RiIb3ekmEY4Ry-x-IOkrgCgrOUCcS8s-m4CRl7zKWtI/edit
+
