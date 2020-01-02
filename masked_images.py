@@ -3,6 +3,7 @@
 import argparse
 import asyncio
 import collections
+import html
 import itertools
 import json
 import os
@@ -51,7 +52,7 @@ class GameState:
 
   def __init__(self, team):
     self.team = team
-    self.sessions = set()
+    self.sessions = {}
     self.wid_sessions = {}
     self.running = False
     self.cond = asyncio.Condition()
@@ -84,7 +85,7 @@ class GameState:
 
     async with self.cond:
       if session not in self.sessions:
-        self.sessions.add(session)
+        self.sessions[session] = None
         self.cond.notify_all()
 
 
@@ -143,6 +144,22 @@ class GameState:
         self.solved.add(self.current_logo)
         self.cond.notify_all()
 
+  async def set_name(self, session, name):
+    self.sessions[session] = name
+
+    players = []
+    for n in self.sessions.values():
+      if n:
+        players.append((n.lower(), n))
+      else:
+        players.append(("zzzzzzzz", "anonymous"))
+
+    players.sort()
+    players = ", ".join(p[1] for p in players)
+    players = html.escape(players)
+
+    await self.team.send_messages([{"method": "players", "players": players}])
+
 
 class MaskedImagesApp(scrum.ScrumApp):
   async def on_wait(self, team, session, wid):
@@ -170,9 +187,22 @@ class SubmitHandler(tornado.web.RequestHandler):
     if not who: who = "anonymous"
     print(f"{team}: {who} submitted {answer}")
 
-    await gs.send_chat(f"{who} guessed \"{submission}\"")
+    await gs.send_chat(f"<b>{who}</b> guessed \"{html.escape(submission)}\"")
     await gs.try_answer(answer)
 
+    self.set_status(http.client.NO_CONTENT.value)
+
+
+class NameHandler(tornado.web.RequestHandler):
+  def prepare(self):
+    self.args = json.loads(self.request.body)
+
+  async def post(self):
+    scrum_app = self.application.settings["scrum_app"]
+    team, session = await scrum_app.check_cookie(self)
+    gs = GameState.get_for_team(team)
+
+    await gs.set_name(session, self.args.get("who"))
     self.set_status(http.client.NO_CONTENT.value)
 
 
@@ -217,6 +247,7 @@ def make_app(options):
 
   handlers = [
     (r"/masksubmit", SubmitHandler),
+    (r"/maskname", NameHandler),
   ]
   if options.debug:
     handlers.append((r"/maskdebug/(\S+)", DebugHandler))

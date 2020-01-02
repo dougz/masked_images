@@ -14,12 +14,19 @@ class MaskedImagesDispatcher {
 	    "show_logo": goog.bind(this.show_logo, this),
 	    "show_answer": goog.bind(this.show_answer, this),
 	    "show_all": goog.bind(this.show_all, this),
+            "players": goog.bind(this.players, this),
 	}
     }
 
     /** @param{Message} msg */
     dispatch(msg) {
 	this.methods[msg.method](msg);
+    }
+
+    /** @param{Message} msg */
+    players(msg) {
+        var el = goog.dom.getElement("players");
+        el.innerHTML = "<b>Players:</b> " + msg.players;
     }
 
     /** @param{Message} msg */
@@ -77,7 +84,8 @@ class MaskedImagesDispatcher {
 	if (curr.length > 3) {
 	    goog.dom.removeNode(curr[0]);
 	}
-	var el = goog.dom.createDom("P", null, msg.text);
+	var el = goog.dom.createDom("P");
+        el.innerHTML = msg.text;
 	masked_images.chat.appendChild(el);
     }
 }
@@ -89,18 +97,22 @@ function masked_images_submit(textel, e) {
     var username = masked_images.who.value;
     localStorage.setItem("name", username);
     var msg = masked_images.serializer.serialize({"answer": answer, "who": username});
-    goog.net.XhrIo.send("/masksubmit", function(e) {
-	var code = e.target.getStatus();
-	if (code != 204) {
-	    alert(e.target.getResponseText());
-	}
-    }, "POST", msg);
+    goog.net.XhrIo.send("/masksubmit", Common_expect_204, "POST", msg);
     e.preventDefault();
 }
 
 function masked_images_onkeydown(textel, e) {
     if (e.keyCode == goog.events.KeyCodes.ENTER) {
 	masked_images_submit(textel, e);
+    }
+}
+
+function masked_images_send_name() {
+    var name = masked_images.who.value;
+    if (name != masked_images.sent_name) {
+        masked_images.sent_name = name;
+        var msg = masked_images.serializer.serialize({"who": name});
+        goog.net.XhrIo.send("/maskname", Common_expect_204, "POST", msg);
     }
 }
 
@@ -118,6 +130,7 @@ var masked_images = {
     t6e: null,
     t6a: null,
     words: null,
+    send_name: null,
 }
 
 puzzle_init = function() {
@@ -143,5 +156,7 @@ puzzle_init = function() {
 
     masked_images.waiter = new Common_Waiter(new MaskedImagesDispatcher(), "/maskwait", 0, null, null);
     masked_images.waiter.start();
+
+    setInterval(masked_images_send_name, 1000);
 }
 

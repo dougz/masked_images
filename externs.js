@@ -17,6 +17,8 @@ class Message {
 	this.logo_url;
 	/** @type{?string} */
 	this.answer;
+	/** @type{?string} */
+	this.players;
         /** @type{Array<string, string>} */
         this.multi;
     }
